@@ -1,0 +1,31 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Inicio · CodeJalisco</title><link rel="stylesheet" href="/css/styles.css"><script src="/js/app.js"></script></head><body><header class="top" id="top"></header><div class="wrap" id="alerta"></div>
+<main>
+<section class="hero"><div class="wrap hero-grid"><div>
+  <span class="chip">Sprint 6 · Seguimiento y actualización de estados</span>
+  <h1>Reporta los problemas de tu comunidad de forma fácil y rápida</h1>
+  <p class="lead">CodeJalisco conecta a los ciudadanos con las dependencias responsables. Envía tu reporte con fotografía y ubicación, obtén un folio y consulta en cualquier momento si ya fue atendido.</p>
+  <div class="acciones" id="cta"></div></div>
+  <aside class="card"><h2>Problemas que puedes reportar</h2><ul class="lista" id="categorias"></ul></aside></div></section>
+<section class="seccion wrap"><h2>¿Cómo funciona la plataforma?</h2><p>Flujo de navegación definido durante el segundo sprint a partir del Product Backlog del primero.</p>
+  <div class="pasos">
+  <div class="card"><div class="num">1</div><h3>Crea tu cuenta</h3><p>Regístrate con tu correo o con Google para iniciar sesión.</p></div>
+  <div class="card"><div class="num">2</div><h3>Registra el problema</h3><p>Selecciona la categoría, describe lo que sucede y agrega foto y ubicación.</p></div>
+  <div class="card"><div class="num">3</div><h3>Recibe tu folio</h3><p>Al enviar el reporte el sistema genera un folio único para consultarlo después.</p></div>
+  <div class="card"><div class="num">4</div><h3>Da seguimiento</h3><p>Consulta si tu reporte fue recibido, revisado, atendido o cerrado.</p></div></div></section>
+<section class="banda"><div class="wrap tres">
+  <div><h3>Para el ciudadano</h3><p>Un solo lugar para reportar sin necesidad de saber a qué dependencia acudir.</p></div>
+  <div><h3>Para la dependencia</h3><p>Un panel exclusivo para administradores con los reportes recibidos, clasificados por categoría y estado de atención.</p></div>
+  <div><h3>Para el proyecto</h3><p>Continuidad del Sprint 2: las pantallas navegables ahora funcionan con cuentas, roles y datos reales.</p></div></div></section>
+</main>
+<script>
+init().then(async ({u}) => {
+  if (new URLSearchParams(location.search).get('error') === 'permiso') aviso(document.getElementById('alerta'), 'No tienes permiso para acceder a esa sección.', 'error');
+  const adm = u && u.rol === 'administrador';
+  document.getElementById('cta').innerHTML = adm
+    ? '<a class="btn" href="/panel.html">Ir al Panel de dependencia</a><a class="btn sec" href="/consultar.html">Consultar un folio</a>'
+    : '<a class="btn" href="/reportar.html">Crear un reporte</a><a class="btn sec" href="/consultar.html">Consultar mi folio</a>' + (u ? '' : '<a class="btn sec" href="/registro.html">Crear cuenta</a>');
+  const cats = await api('/api/categorias');
+  document.getElementById('categorias').innerHTML = cats.map(c => `<li>${esc(c.nombre)}</li>`).join('');
+}).catch(()=>{});
+</script>
+<footer id="pie"></footer></body></html>

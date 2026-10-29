@@ -1,0 +1,8 @@
+[
+  { "folio": "CJ-2026-1001", "categoria": "Bache", "descripcion": "Bache profundo sobre el carril derecho que ya dañó varios vehículos.", "municipio": "Guadalajara", "colonia": "Centro", "calle": "Av. Juárez y Calle 8 de Julio", "referencia": "Frente a la farmacia", "correo": "", "estado": "En atención", "fecha": "2026-09-02", "usuarioId": null, "usuarioNombre": "Dato de ejemplo (Sprint 1)", "foto": null,
+    "historial": [ { "estado": "Recibido", "fecha": "2026-09-02" }, { "estado": "En atención", "fecha": "2026-09-05" } ] },
+  { "folio": "CJ-2026-1002", "categoria": "Alumbrado público", "descripcion": "Tres luminarias apagadas en la calle desde hace dos semanas.", "municipio": "Zapopan", "colonia": "Las Águilas", "calle": "Calle Halcón 120", "referencia": "Junto al parque", "correo": "", "estado": "Recibido", "fecha": "2026-09-08", "usuarioId": null, "usuarioNombre": "Dato de ejemplo (Sprint 1)", "foto": null,
+    "historial": [ { "estado": "Recibido", "fecha": "2026-09-08" } ] },
+  { "folio": "CJ-2026-1003", "categoria": "Fuga de agua", "descripcion": "Fuga constante en la banqueta que genera encharcamiento.", "municipio": "Tlaquepaque", "colonia": "Las Juntas", "calle": "Calle Hidalgo 45", "referencia": "Frente a la escuela", "correo": "", "estado": "Atendido", "fecha": "2026-08-27", "usuarioId": null, "usuarioNombre": "Dato de ejemplo (Sprint 1)", "foto": null,
+    "historial": [ { "estado": "Recibido", "fecha": "2026-08-27" }, { "estado": "En atención", "fecha": "2026-08-29" }, { "estado": "Atendido", "fecha": "2026-09-01" } ] }
+]

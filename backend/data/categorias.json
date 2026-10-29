@@ -1,0 +1,7 @@
+[
+  { "id": 1, "nombre": "Bache" },
+  { "id": 2, "nombre": "Alumbrado público" },
+  { "id": 3, "nombre": "Árbol caído" },
+  { "id": 4, "nombre": "Acumulación de basura" },
+  { "id": 5, "nombre": "Fuga de agua" }
+]

@@ -1,0 +1,26 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Iniciar sesión · CodeJalisco</title><link rel="stylesheet" href="/css/styles.css"><script src="/js/app.js"></script></head><body><header class="top" id="top"></header><main class="pagina"><div class="wrap angosta">
+  <h1>Iniciar sesión</h1><p>Accede con tu cuenta de ciudadano o de administrador de reportes.</p>
+  <div id="msg"></div>
+  <form class="card" id="f" novalidate>
+    <div class="campo"><label for="correo">Correo electrónico *</label><input id="correo" type="email" autocomplete="email" required></div>
+    <div class="campo"><label for="pw">Contraseña *</label><input id="pw" type="password" autocomplete="current-password" required></div>
+    <button class="btn" id="ok" type="submit">Iniciar sesión</button>
+    <div class="separador">o</div>
+    <a class="btn google" href="/auth/google"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/><path fill="#FBBC05" d="M10.5 28.7a14.5 14.5 0 0 1 0-9.4l-7.9-6.1a24 24 0 0 0 0 21.6l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>Continuar con Google</a>
+    <p class="ayuda">¿Aún no tienes cuenta? <a href="/registro.html">Regístrate</a>. Los administradores inician sesión solo con su correo institucional y contraseña.</p>
+  </form></div></main>
+<script>
+const p = new URLSearchParams(location.search), msg = document.getElementById('msg');
+const errores = { google: 'El acceso con Google aún no está configurado en este servidor. Usa tu correo y contraseña o consulta la documentación.', google_fallo: 'No se pudo completar el acceso con Google. Intenta de nuevo.', admin_google: 'Las cuentas de administrador solo pueden iniciar sesión con correo y contraseña.' };
+if (errores[p.get('error')]) aviso(msg, errores[p.get('error')], 'error');
+init('invitado');
+document.getElementById('f').onsubmit = async e => {
+  e.preventDefault(); const b = document.getElementById('ok'); b.disabled = true; aviso(msg, '');
+  try {
+    const { usuario } = await api('/api/login', { method: 'POST', body: { correo: correo.value, password: pw.value } });
+    const next = p.get('next');
+    location.href = next && next.startsWith('/') && !next.startsWith('//') ? next : (usuario.rol === 'administrador' ? '/panel.html' : '/index.html');
+  } catch (er) { aviso(msg, er.message, 'error'); b.disabled = false; }
+};
+</script>
+<footer id="pie"></footer></body></html>

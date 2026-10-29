@@ -1,0 +1,55 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reportar problema · CodeJalisco</title><link rel="stylesheet" href="/css/styles.css"><script src="/js/app.js"></script></head><body><header class="top" id="top"></header><main class="pagina"><div class="wrap">
+  <h1>Registrar un reporte</h1><p>Completa la información del problema. Los campos marcados con * son obligatorios.</p>
+  <div id="msg"></div>
+  <div id="exito" hidden class="card"><h2>Reporte enviado</h2><p>Guarda tu folio para consultar el estado de tu reporte:</p><p style="font-size:1.8rem;font-weight:bold;color:var(--tinta)" id="folio"></p><p class="ayuda" id="resumen"></p><div class="acciones"><a class="btn" id="ver" href="#">Consultar este folio</a><a class="btn sec" href="/reportar.html">Enviar otro reporte</a></div></div>
+  <form class="card" id="f" novalidate>
+    <div class="campo"><label for="categoria">Tipo de problema *</label><select id="categoria" required><option value="">Selecciona una opción</option></select></div>
+    <div class="campo"><label for="descripcion">Descripción del problema *</label><textarea id="descripcion" maxlength="1000" placeholder="Explica qué sucede, desde cuándo y cómo afecta a la comunidad." required></textarea></div>
+    <div class="dos"><div class="campo"><label for="municipio">Municipio *</label><input id="municipio" required></div><div class="campo"><label for="colonia">Colonia *</label><input id="colonia" required></div>
+    <div class="campo"><label for="calle">Calle y número o cruce *</label><input id="calle" required></div><div class="campo"><label for="referencia">Referencia</label><input id="referencia" placeholder="Frente a la escuela, junto al parque..."></div>
+    <div class="campo"><label for="foto">Fotografía del problema</label><input id="foto" type="file" accept="image/png,image/jpeg,image/webp"><p class="ayuda">PNG, JPG o WebP, máximo 2 MB.</p></div><div class="campo"><label for="correo">Correo de contacto</label><input id="correo" type="email" placeholder="opcional, para recibir avisos"></div></div>
+    <div class="campo"><label>Ubicación del problema</label><button class="btn sec" type="button" id="geo">Usar mi ubicación actual</button><p class="ayuda" id="geo-msg" role="status">Opcional. Si no puedes compartir tu ubicación, escribe las coordenadas o continúa solo con la dirección.</p></div>
+    <div class="dos"><div class="campo"><label for="latitud">Latitud</label><input id="latitud" inputmode="decimal" placeholder="Ejemplo: 20.659700"></div><div class="campo"><label for="longitud">Longitud</label><input id="longitud" inputmode="decimal" placeholder="Ejemplo: -103.349600"></div></div>
+    <div class="fila-btn"><button class="btn" id="ok" type="submit">Enviar reporte</button><a class="btn sec" href="/index.html">Cancelar</a></div>
+  </form></div></main>
+<script>
+const msg = document.getElementById('msg');
+init('ciudadano').then(async ({u}) => {
+  correo.value = u.correo;
+  const prev = await api('/api/reportes/mios');
+  if (prev.length) { document.getElementById('f').hidden = true; document.getElementById('exito').hidden = false; document.querySelector('#exito h2').textContent = 'Ya generaste tu folio'; document.querySelector('#exito p').textContent = 'Cada cuenta de ciudadano puede generar un solo reporte. Este es tu folio:'; document.getElementById('folio').textContent = prev[0].folio; document.getElementById('ver').href = '/consultar.html?folio=' + encodeURIComponent(prev[0].folio); document.querySelector('#exito .sec').remove(); return; }
+  (await api('/api/categorias')).forEach(c => categoria.add(new Option(c.nombre, c.nombre)));
+});
+const gmsg = document.getElementById('geo-msg');
+document.getElementById('geo').onclick = () => {
+  if (!navigator.geolocation) return gmsg.textContent = 'Tu navegador no permite obtener la ubicación. Escribe las coordenadas o continúa solo con la dirección.';
+  gmsg.textContent = 'Obteniendo tu ubicación…';
+  navigator.geolocation.getCurrentPosition(p => {
+    latitud.value = p.coords.latitude.toFixed(6); longitud.value = p.coords.longitude.toFixed(6);
+    gmsg.textContent = 'Ubicación capturada (precisión aproximada de ' + Math.round(p.coords.accuracy) + ' m). Puedes corregir las coordenadas si lo necesitas.';
+  }, er => {
+    gmsg.textContent = er.code === 1 ? 'No se otorgó permiso para compartir tu ubicación. Escribe las coordenadas o envía el reporte solo con la dirección.' : 'No fue posible obtener tu ubicación. Escribe las coordenadas o envía el reporte solo con la dirección.';
+  }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+};
+const coord = (el, min, max, nombre) => { // validación manual de coordenadas
+  const v = el.value.trim().replace(',', '.'); if (!v) return null;
+  const n = Number(v); if (!Number.isFinite(n) || n < min || n > max) throw new Error(nombre + ' no es válida (debe estar entre ' + min + ' y ' + max + ').');
+  return n;
+};
+const leer = f => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = no; r.readAsDataURL(f); });
+document.getElementById('f').onsubmit = async e => {
+  e.preventDefault(); aviso(msg, '');
+  const file = foto.files[0];
+  if (file && file.size > 2e6) return aviso(msg, 'La fotografía no puede pesar más de 2 MB.', 'error');
+  let lat, lon;
+  try { lat = coord(latitud, -90, 90, 'La latitud'); lon = coord(longitud, -180, 180, 'La longitud'); if ((lat === null) !== (lon === null)) throw new Error('Indica latitud y longitud juntas, o deja ambas vacías.'); }
+  catch (er) { return aviso(msg, er.message, 'error'); }
+  const b = document.getElementById('ok'); b.disabled = true;
+  try {
+    const r = await api('/api/reportes', { method: 'POST', body: { latitud: lat, longitud: lon, categoria: categoria.value, descripcion: descripcion.value, municipio: municipio.value, colonia: colonia.value, calle: calle.value, referencia: referencia.value, correo: correo.value, foto: file ? await leer(file) : null } });
+    document.getElementById('f').hidden = true; document.getElementById('exito').hidden = false;
+    document.getElementById('folio').textContent = r.folio; document.getElementById('resumen').textContent = 'Fecha: ' + r.fecha + ' · Ubicación: ' + r.calle + ', ' + r.colonia + ', ' + r.municipio + (r.latitud != null ? ' (' + r.latitud + ', ' + r.longitud + ')' : ''); document.getElementById('ver').href = '/consultar.html?folio=' + encodeURIComponent(r.folio);
+  } catch (er) { aviso(msg, er.message, 'error'); b.disabled = false; }
+};
+</script>
+<footer id="pie"></footer></body></html>

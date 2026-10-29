@@ -1,0 +1,9 @@
+{
+  "name": "codejalisco",
+  "version": "3.0.0",
+  "description": "Plataforma ciudadana para el reporte de problemas urbanos (Sprint 3: registro, inicio de sesión y perfiles)",
+  "main": "backend/server.js",
+  "scripts": { "start": "node backend/server.js", "test": "node tests/smoke.js" },
+  "engines": { "node": ">=18" },
+  "license": "MIT"
+}

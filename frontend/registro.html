@@ -1,0 +1,25 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Registro · CodeJalisco</title><link rel="stylesheet" href="/css/styles.css"><script src="/js/app.js"></script></head><body><header class="top" id="top"></header><main class="pagina"><div class="wrap angosta">
+  <h1>Crear una cuenta</h1><p>Regístrate como ciudadano para reportar problemas y consultar su estado. Los campos marcados con * son obligatorios.</p>
+  <div id="msg"></div>
+  <form class="card" id="f" novalidate>
+    <div class="campo"><label for="nombre">Nombre completo *</label><input id="nombre" autocomplete="name" required></div>
+    <div class="campo"><label for="correo">Correo electrónico *</label><input id="correo" type="email" autocomplete="email" required></div>
+    <div class="dos">
+      <div class="campo"><label for="pw">Contraseña *</label><input id="pw" type="password" autocomplete="new-password" required><p class="ayuda">Mínimo 8 caracteres, con letras y números.</p></div>
+      <div class="campo"><label for="pw2">Confirmar contraseña *</label><input id="pw2" type="password" autocomplete="new-password" required></div></div>
+    <button class="btn" id="ok" type="submit">Crear cuenta</button>
+    <div class="separador">o</div>
+    <a class="btn google" href="/auth/google">Registrarse con Google</a>
+    <p class="ayuda">¿Ya tienes cuenta? <a href="/login.html">Inicia sesión</a>.</p>
+  </form></div></main>
+<script>
+const msg = document.getElementById('msg'); init('invitado');
+document.getElementById('f').onsubmit = async e => {
+  e.preventDefault(); aviso(msg, '');
+  if (pw.value !== pw2.value) return aviso(msg, 'Las contraseñas no coinciden.', 'error');
+  const b = document.getElementById('ok'); b.disabled = true;
+  try { await api('/api/registro', { method: 'POST', body: { nombre: nombre.value, correo: correo.value, password: pw.value } }); location.href = '/index.html'; }
+  catch (er) { aviso(msg, er.message, 'error'); b.disabled = false; }
+};
+</script>
+<footer id="pie"></footer></body></html>

@@ -1,0 +1,32 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Panel de dependencia · CodeJalisco</title><link rel="stylesheet" href="/css/styles.css"><script src="/js/app.js"></script></head><body><header class="top" id="top"></header><main class="pagina"><div class="wrap ancha">
+  <h1>Panel de dependencia</h1><p>Vista interna para dar seguimiento a los reportes enviados por la ciudadanía.</p>
+  <div class="stats" id="stats"></div>
+  <div class="card filtros"><div class="campo"><label for="fc">Filtrar por categoría</label><select id="fc"><option value="">Todas</option></select></div>
+    <div class="campo"><label for="fe">Filtrar por estado</label><select id="fe"><option value="">Todos</option></select></div>
+    <div class="campo"><label for="q">Buscar por folio o colonia</label><input id="q" placeholder="CJ-2026-1001, Centro..."></div></div>
+  <div id="msg"></div>
+  <div class="card tabla-wrap"><table><thead><tr><th>Folio</th><th>Categoría</th><th>Ubicación</th><th>Fecha</th><th>Reportó</th><th>Estado</th><th>Actualizar</th></tr></thead><tbody id="tb"></tbody></table></div>
+</div></main>
+<script>
+let datos = [], estados = [];
+function pintar() {
+  const t = q.value.trim().toLowerCase();
+  const v = datos.filter(r => (!fc.value || r.categoria === fc.value) && (!fe.value || r.estado === fe.value) && (!t || r.folio.toLowerCase().includes(t) || r.colonia.toLowerCase().includes(t)));
+  stats.innerHTML = estados.map(e => `<div class="card">${esc(e)}<b>${datos.filter(r => r.estado === e).length}</b></div>`).join('');
+  tb.innerHTML = v.length ? v.map(r => `<tr><td><a href="/consultar.html?folio=${esc(r.folio)}"><b>${esc(r.folio)}</b></a></td><td>${esc(r.categoria)}</td><td>${esc(r.colonia)}, ${esc(r.municipio)}</td><td>${esc(r.fecha)}</td><td>${esc(r.usuarioNombre)}</td><td>${pill(r.estado)}</td>
+    <td><select data-f="${esc(r.folio)}" aria-label="Actualizar estado de ${esc(r.folio)}">${estados.map(e => `<option${e === r.estado ? ' selected' : ''}>${esc(e)}</option>`).join('')}</select></td></tr>`).join('')
+    : '<tr><td colspan="7">No hay reportes que coincidan con los filtros.</td></tr>';
+}
+init('administrador').then(async () => {
+  estados = await api('/api/estados'); (await api('/api/categorias')).forEach(c => fc.add(new Option(c.nombre, c.nombre))); estados.forEach(e => fe.add(new Option(e, e)));
+  datos = await api('/api/reportes'); pintar();
+}).catch(e => aviso(document.getElementById('msg'), e.message, 'error'));
+[fc, fe, q].forEach(el => el.oninput = pintar);
+tb.onchange = async e => {
+  const f = e.target.dataset.f; if (!f) return;
+  try { const r = await api(`/api/reportes/${f}/estado`, { method: 'PATCH', body: { estado: e.target.value } }); datos = datos.map(d => d.folio === f ? r : d); aviso(document.getElementById('msg'), ''); toast(`Estado de ${f} actualizado`); }
+  catch (er) { aviso(document.getElementById('msg'), er.message, 'error'); }
+  pintar();
+};
+</script>
+<footer id="pie"></footer></body></html>

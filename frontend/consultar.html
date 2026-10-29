@@ -1,0 +1,26 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Consultar folio · CodeJalisco</title><link rel="stylesheet" href="/css/styles.css"><script src="/js/app.js"></script></head><body><header class="top" id="top"></header><main class="pagina"><div class="wrap">
+  <h1>Consultar el estado de un reporte</h1><p>Escribe el folio que recibiste al momento de enviar tu reporte.</p>
+  <form class="card" id="f" novalidate><label for="folio">Folio del reporte</label>
+    <div class="buscar"><input id="folio" placeholder="Ejemplo: CJ-2026-1001" autocomplete="off"><button class="btn" type="submit">Buscar</button></div></form>
+  <div id="msg" style="margin-top:1.2rem"></div><div id="res"></div>
+  <section id="mios" hidden style="margin-top:2.2rem"><h2>Mis reportes</h2><div class="card tabla-wrap"><table><thead><tr><th>Folio</th><th>Categoría</th><th>Fecha</th><th>Estado</th></tr></thead><tbody id="tb"></tbody></table></div></section>
+</div></main>
+<script>
+const msg = document.getElementById('msg'), res = document.getElementById('res');
+async function buscar(f) {
+  aviso(msg, ''); res.innerHTML = ''; f = f.trim().toUpperCase();
+  if (!/^CJ-\d{4}-\d+$/.test(f)) return aviso(msg, 'El folio debe tener el formato CJ-AAAA-NNNN, por ejemplo CJ-2026-1001.', 'error');
+  try { res.innerHTML = detalleReporte(await api('/api/reportes/folio/' + encodeURIComponent(f))); }
+  catch (e) { aviso(msg, e.status === 404 ? 'No existe un reporte con el folio ' + f + '. Verifica que esté escrito correctamente.' : (e.status === 0 || e.status >= 500) ? 'No fue posible consultar el reporte en este momento (' + e.message + ')' : e.message, 'error'); }
+}
+init('auth').then(async ({u}) => {
+  const q = new URLSearchParams(location.search).get('folio'); if (q) { folio.value = q; buscar(q); }
+  if (u.rol === 'ciudadano') {
+    const rs = await api('/api/reportes/mios'); document.getElementById('mios').hidden = false;
+    document.getElementById('tb').innerHTML = rs.length ? rs.map(r => `<tr><td><a href="?folio=${esc(r.folio)}"><b>${esc(r.folio)}</b></a></td><td>${esc(r.categoria)}</td><td>${esc(r.fecha)}</td><td>${pill(r.estado)}</td></tr>`).join('')
+      : '<tr><td colspan="4">Aún no has enviado reportes. <a href="/reportar.html">Crea el primero</a>.</td></tr>';
+  }
+});
+document.getElementById('f').onsubmit = e => { e.preventDefault(); buscar(folio.value); };
+</script>
+<footer id="pie"></footer></body></html>
